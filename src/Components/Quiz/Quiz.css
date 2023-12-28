@@ -9,6 +9,7 @@
     gap: 10px;
     border-radius: 10px;
     padding: 30px 40px;
+    align-items: center;
 }
 
 .container hr{
@@ -44,6 +45,7 @@
     font-weight: 500;
     border-radius: 8px;
     cursor: pointer;
+    align-self:center;
 }
 
 .container .index{
