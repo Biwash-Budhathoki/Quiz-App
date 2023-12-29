@@ -21,7 +21,6 @@ const Quiz1 = () => {
     } finally {
       setLoading(false);
     }
-    
   };
 
   useEffect(() => {
@@ -45,6 +44,29 @@ const Quiz1 = () => {
     }
   };
 
+  const checkAnswer = (e, ans) => {
+    if (!lock) {
+      if (ans === correctAnswer) {
+        // Selected answer is correct
+        e.target.classList.add('correct');
+        setScore((prevScore) => prevScore + 1);
+      } else {
+        // Selected answer is wrong
+        e.target.classList.add('wrong');
+
+        // Find the element with the correct answer and add the "correct" class
+        const options = document.querySelectorAll('ul li');
+        options.forEach((option) => {
+          if (option.innerText === correctAnswer) {
+            option.classList.add('correct');
+          }
+        });
+      }
+
+      setLock(true);
+    }
+  };
+
   const handleNextQuestion = () => {
     if (lock === true) {
       // Remove styling from all list items
@@ -52,41 +74,18 @@ const Quiz1 = () => {
       options.forEach((option) => {
         option.classList.remove('correct', 'wrong');
       });
-  
+
       if (currentQuestionIndex < (data?.results?.length || 0) - 1) {
         setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
       } else {
         // Quiz completed, handle it as needed
         setResult(true);
       }
-  
+
       // Reset state for the next question
       setLock(false);
       setCorrectAnswer(null);
       setOptions([]);
-    }
-  };
-
-  const checkAnswer = (e, ans) => {
-    if (!lock) {
-      if (ans === correctAnswer) {
-        // Selected answer is correct
-        e.target.classList.add("correct");
-        setScore((prevScore) => prevScore + 1);
-      } else {
-        // Selected answer is wrong
-        e.target.classList.add("wrong");
-
-        // Find the element with the correct answer and add the "correct" class
-        const options = document.querySelectorAll('ul li');
-        options.forEach((option) => {
-          if (option.innerText === correctAnswer) {
-            option.classList.add("correct");
-          }
-        });
-      }
-
-      setLock(true);
     }
   };
 
@@ -109,7 +108,7 @@ const Quiz1 = () => {
     <div className='container'>
       <h1>Trivia Quiz App</h1>
       <hr />
-    
+
       {result ? (
         <div>
           <h3>Quiz Completed</h3>
@@ -118,16 +117,22 @@ const Quiz1 = () => {
         </div>
       ) : (
         <div>
-        <h2>{currentQuestionIndex+1}. {data?.results?.[currentQuestionIndex]?.question || ''}</h2>
-        <ul>
-          {options.map((option, optionIndex) => (
-            <li key={optionIndex} onClick={(e) => checkAnswer(e, option)}>
-              {option}
-            </li>
-          ))}
-        </ul>
-        <button onClick={handleNextQuestion}>Next Question</button>
-      </div>
+          <h2
+            dangerouslySetInnerHTML={{
+              __html: `${currentQuestionIndex + 1}. ${data?.results?.[currentQuestionIndex]?.question}`,
+            }}
+          />
+          <ul>
+            {options.map((option, optionIndex) => (
+              <li
+                key={optionIndex}
+                onClick={(e) => checkAnswer(e, option)}
+                dangerouslySetInnerHTML={{ __html: option }}
+              />
+            ))}
+          </ul>
+          <button onClick={handleNextQuestion}>Next Question</button>
+        </div>
       )}
     </div>
   );

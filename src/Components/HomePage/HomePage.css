@@ -1,0 +1,38 @@
+/* Add this CSS in a separate file, e.g., HomePage.css */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+  
+  .dropbtn {
+    background-color: #3498db;
+    color: white;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    z-index: 1;
+  }
+  
+  .dropdown-content div {
+    display: block;
+    padding: 12px;
+    cursor: pointer;
+  }
+  
+  .dropdown-content div:hover {
+    background-color: #ddd;
+  }
+  
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+  
