@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import './Quiz.css';
+import { useLocation } from 'react-router-dom';
 
 const Quiz1 = () => {
+  const location = useLocation();
+  const { difficulty, category, type, numberOfQuestions } = location.state || {};
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -13,7 +16,8 @@ const Quiz1 = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('https://opentdb.com/api.php?amount=10&category=9');
+      // You can use the state values (difficulty, category, type, numberOfQuestions) here
+      const response = await fetch(`https://opentdb.com/api.php?amount=${numberOfQuestions}&category=${category?.value}&difficulty=${difficulty?.value}&type=${type?.value}`);
       const result = await response.json();
       setData(result);
     } catch (error) {
@@ -25,7 +29,7 @@ const Quiz1 = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [difficulty, category, type, numberOfQuestions]);
 
   useEffect(() => {
     if (data && data.results) {
