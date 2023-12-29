@@ -1,123 +1,109 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const Quiz1 = () => {
+const QuizComponent = () => {
   const location = useLocation();
-  const { difficulty, category, type, numberOfQuestions } = location.state || {};
+  const { quizDifficulty, quizCategory, quizType, questionCount } = location.state || {};
 
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [lock, setLock] = useState(false);
-  const [options, setOptions] = useState([]);
+  const [quizData, setQuizData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+  const [isAnswerLocked, setIsAnswerLocked] = useState(false);
+  const [answerOptions, setAnswerOptions] = useState([]);
   const [correctAnswer, setCorrectAnswer] = useState(null);
-  const [score, setScore] = useState(0);
-  const [result, setResult] = useState(false);
+  const [quizScore, setQuizScore] = useState(0);
+  const [isQuizCompleted, setIsQuizCompleted] = useState(false);
 
-  const fetchData = async () => {
+  const fetchQuizData = async () => {
     try {
-      setLoading(true);
-      // You can use the state values (difficulty, category, type, numberOfQuestions) here
-      const ifAmount = numberOfQuestions ? `&amount=${numberOfQuestions}` : '';
-      const ifCategory = category ? `&category=${category.value}` : '';
-      const ifDifficulty = difficulty ? `&difficulty=${difficulty.value}` : '';
-      const ifType = type ? `&type=${type.value}` : '';
+      setIsLoading(true);
+      const amountParam = questionCount ? questionCount : 5;
+      const categoryParam = quizCategory ? `&category=${quizCategory.value}` : '';
+      const difficultyParam = quizDifficulty ? `&difficulty=${quizDifficulty.value}` : '';
+      const typeParam = quizType ? `&type=${quizType.value}` : '';
 
-      const url = `https://opentdb.com/api.php?${ifAmount}${ifCategory}${ifDifficulty}${ifType}`;
-      const response = await fetch(url);
-      // const response = await fetch(`https://opentdb.com/api.php?amount=${numberOfQuestions}&category=${category?.value}&difficulty=${difficulty?.value}&type=${type?.value}`);
+      const apiUrl = `https://opentdb.com/api.php?amount=${amountParam}${categoryParam}${difficultyParam}${typeParam}`;
+      const response = await fetch(apiUrl);
       const result = await response.json();
-      setData(result);
-      setLoading(false);
+      setQuizData(result);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, [difficulty, category, type, numberOfQuestions]);
+    fetchQuizData();
+  }, [quizDifficulty, quizCategory, quizType, questionCount]);
 
   useEffect(() => {
-    if (data && data.results) {
-      const currentQuestion = data.results[currentQuestionIndex];
+    if (quizData && quizData.results) {
+      const currentQuestion = quizData.results[currentQuestionIdx];
       const allOptions = [...currentQuestion.incorrect_answers, currentQuestion.correct_answer];
-      shuffleArray(allOptions);
-      setOptions(allOptions);
+      randomizeArray(allOptions);
+      setAnswerOptions(allOptions);
       setCorrectAnswer(currentQuestion.correct_answer);
     }
-  }, [data, currentQuestionIndex]);
+  }, [quizData, currentQuestionIdx]);
 
-  const shuffleArray = (array) => {
+  const randomizeArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]];
     }
   };
 
-  const checkAnswer = (e, ans) => {
-    if (!lock) {
-      if (ans === correctAnswer) {
-        // Selected answer is correct
+  const validateAnswer = (e, selectedAnswer) => {
+    if (!isAnswerLocked) {
+      if (selectedAnswer === correctAnswer) {
         e.target.classList.add('correct');
-        setScore((prevScore) => prevScore + 1);
+        setQuizScore((prevScore) => prevScore + 1);
       } else {
-        // Selected answer is wrong
         e.target.classList.add('wrong');
-
-        // Find the element with the correct answer and add the "correct" class
-        const options = document.querySelectorAll('ul li');
-        options.forEach((option) => {
+        const optionElements = document.querySelectorAll('ul li');
+        optionElements.forEach((option) => {
           if (option.innerText === correctAnswer) {
             option.classList.add('correct');
           }
         });
       }
-
-      setLock(true);
+      setIsAnswerLocked(true);
     }
   };
 
-  const handleNextQuestion = () => {
-    if (lock === true) {
-      // Remove styling from all list items
-      const options = document.querySelectorAll('ul li');
-      options.forEach((option) => {
+  const proceedToNextQuestion = () => {
+    if (isAnswerLocked) {
+      const optionElements = document.querySelectorAll('ul li');
+      optionElements.forEach((option) => {
         option.classList.remove('correct', 'wrong');
       });
 
-      if (currentQuestionIndex < (data?.results?.length || 0) - 1) {
-        setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+      if (currentQuestionIdx < (quizData?.results?.length || 0) - 1) {
+        setCurrentQuestionIdx((prevIndex) => prevIndex + 1);
       } else {
-        // Quiz completed, handle it as needed
-        setResult(true);
+        setIsQuizCompleted(true);
       }
 
-      // Reset state for the next question
-      setLock(false);
+      setIsAnswerLocked(false);
       setCorrectAnswer(null);
-      setOptions([]);
+      setAnswerOptions([]);
     }
   };
 
-  const handleReset = () => {
-    // Reset all state variables to their initial values
-    setData(null);
-    setLoading(false);
-    setCurrentQuestionIndex(0);
-    setLock(false);
-    setOptions([]);
+  const resetQuiz = () => {
+    setQuizData(null);
+    setIsLoading(false);
+    setCurrentQuestionIdx(0);
+    setIsAnswerLocked(false);
+    setAnswerOptions([]);
     setCorrectAnswer(null);
-    setScore(0);
-    setResult(false);
-
-    // Fetch new data to start the quiz again
-    fetchData();
+    setQuizScore(0);
+    setIsQuizCompleted(false);
+    fetchQuizData();
   };
 
-  if (loading) {
+  if (isLoading) {
     return <div>Loading...</div>;
   }
   return (
@@ -125,33 +111,33 @@ const Quiz1 = () => {
       <h1>Trivia Quiz App</h1>
       <hr />
 
-      {result ? (
+      {isQuizCompleted ? (
         <div>
           <h3>Quiz Completed</h3>
-          <p>Your Score: {score}</p>
-          <button onClick={handleReset}>Reset Quiz</button>
+          <p>Your Score: {quizScore}</p>
+          <button onClick={resetQuiz}>Reset Quiz</button>
         </div>
       ) : (
         <div>
           <h2
             dangerouslySetInnerHTML={{
-              __html: `${currentQuestionIndex + 1}. ${data?.results?.[currentQuestionIndex]?.question}`,
+              __html: `${currentQuestionIdx + 1}. ${quizData?.results?.[currentQuestionIdx]?.question}`,
             }}
           />
           <ul>
-            {options.map((option, optionIndex) => (
+            {answerOptions.map((option, optionIndex) => (
               <li
                 key={optionIndex}
-                onClick={(e) => checkAnswer(e, option)}
+                onClick={(e) => validateAnswer(e, option)}
                 dangerouslySetInnerHTML={{ __html: option }}
               />
             ))}
           </ul>
-          <button onClick={handleNextQuestion}>Next Question</button>
+          <button onClick={proceedToNextQuestion}>Next Question</button>
         </div>
       )}
     </div>
   );
 };
 
-export default Quiz1;
+export default QuizComponent;
