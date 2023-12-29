@@ -91,10 +91,10 @@ const HomePage = () => {
     const handleGenerateQuiz = () => {
     navigate('/quiz1', {
       state: {
-        difficulty: difficultySelectedOption,
-        category: categorySelectedOption,
-        type: typeSelectedOption,
-        numberOfQuestions: inputValue,
+        quizDifficulty: difficultySelectedOption,
+        quizCategory: categorySelectedOption,
+        quizType: typeSelectedOption,
+        questionCount: inputValue,
       },
     });
     };
