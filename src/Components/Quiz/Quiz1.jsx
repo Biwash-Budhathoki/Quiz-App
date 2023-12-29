@@ -16,10 +16,19 @@ const Quiz1 = () => {
 
   const fetchData = async () => {
     try {
+      setLoading(true);
       // You can use the state values (difficulty, category, type, numberOfQuestions) here
-      const response = await fetch(`https://opentdb.com/api.php?amount=${numberOfQuestions}&category=${category?.value}&difficulty=${difficulty?.value}&type=${type?.value}`);
+      const ifAmount = numberOfQuestions ? `&amount=${numberOfQuestions}` : '';
+      const ifCategory = category ? `&category=${category.value}` : '';
+      const ifDifficulty = difficulty ? `&difficulty=${difficulty.value}` : '';
+      const ifType = type ? `&type=${type.value}` : '';
+
+      const url = `https://opentdb.com/api.php?${ifAmount}${ifCategory}${ifDifficulty}${ifType}`;
+      const response = await fetch(url);
+      // const response = await fetch(`https://opentdb.com/api.php?amount=${numberOfQuestions}&category=${category?.value}&difficulty=${difficulty?.value}&type=${type?.value}`);
       const result = await response.json();
       setData(result);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -108,6 +117,9 @@ const Quiz1 = () => {
     fetchData();
   };
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className='container'>
       <h1>Trivia Quiz App</h1>
